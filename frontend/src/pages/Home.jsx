@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Webcam from "react-webcam";
 
 // Simple SVG icons as components
 const Camera = ({ className = "w-4 h-4" }) => (
@@ -112,49 +113,11 @@ const Menu = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-const defaultFunctionalities = [
-  {
-    id: "email",
-    title: "Send Email",
-    icon: Mail,
-    description: "Send quick emails",
-    status: "inactive",
-  },
-  {
-    id: "phone",
-    title: "Make Call",
-    icon: Phone,
-    description: "Start a phone call",
-    status: "inactive",
-  },
-  {
-    id: "music",
-    title: "Music Control",
-    icon: Music,
-    description: "Control music playback",
-    status: "inactive",
-  },
-  {
-    id: "message",
-    title: "Send Message",
-    icon: MessageSquare,
-    description: "Send text messages",
-    status: "inactive",
-  },
-  {
-    id: "calendar",
-    title: "Schedule Meeting",
-    icon: Calendar,
-    description: "Create calendar events",
-    status: "inactive",
-  },
-  {
-    id: "notes",
-    title: "Take Notes",
-    icon: FileText,
-    description: "Quick note taking",
-    status: "inactive",
-  },
+const availableExpressions = [
+  { id: "smile", label: "Smile" },
+  { id: "wink", label: "Wink" },
+  { id: "eyebrow_raise", label: "Eyebrow Raise" },
+  // Add more as needed
 ];
 
 const availableIcons = [
@@ -166,7 +129,7 @@ const availableIcons = [
 ];
 
 function CameraControlApp() {
-  const [functionalities, setFunctionalities] = useState(defaultFunctionalities);
+  const [functionalities, setFunctionalities] = useState([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [newFunctionality, setNewFunctionality] = useState({
@@ -179,6 +142,17 @@ function CameraControlApp() {
     audio: true,
     recording: false,
   });
+  const [clients, setClients] = useState([]);
+  const [gestureMappings, setGestureMappings] = useState({});
+
+  useEffect(() => {
+    fetch("http://localhost:8000/clients")
+      .then(res => res.json())
+      .then(data => setClients(data.clients || []));
+    fetch("http://localhost:8000/gesture-mappings")
+      .then(res => res.json())
+      .then(data => setGestureMappings(data.gesture_mappings || {}));
+  }, []);
 
   const handleAddFunctionality = () => {
     if (newFunctionality.title && newFunctionality.description) {
@@ -371,14 +345,8 @@ function CameraControlApp() {
         {/* Camera Feed */}
         <div className="flex-1 p-4">
           <div className="relative w-full h-full bg-black rounded-xl overflow-hidden min-h-[600px]">
-            {/* Camera Feed Placeholder */}
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
-              <div className="text-center">
-                <Camera className="w-16 h-16 text-white/50 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">Camera Feed</h3>
-                <p className="text-white/70">Live camera stream would appear here</p>
-              </div>
-            </div>
+            {/* Live Camera Feed */}
+            <Webcam className="absolute inset-0 w-full h-full object-cover" />
 
             {/* Status Overlay */}
             <div className="absolute top-4 left-4 flex gap-2">
@@ -420,6 +388,43 @@ function CameraControlApp() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Expression-to-Client Mapping UI */}
+      <div className="p-4 bg-white border-t border-gray-200">
+        <h2 className="text-lg font-semibold mb-4">Expression to Client Mapping</h2>
+        {availableExpressions.map(expr => (
+          <div key={expr.id} className="mb-4">
+            <label className="font-medium mr-2">{expr.label}</label>
+            <select
+              multiple
+              value={gestureMappings[expr.id] || []}
+              onChange={e => {
+                const selected = Array.from(e.target.selectedOptions, opt => opt.value);
+                setGestureMappings(prev => ({ ...prev, [expr.id]: selected }));
+              }}
+              className="border rounded px-2 py-1 min-w-[200px]"
+            >
+              {clients.map(client => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
+        <button
+          onClick={() => {
+            fetch("http://localhost:8000/gesture-mappings", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ gesture_mappings: gestureMappings }),
+            });
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Save Mappings
+        </button>
       </div>
 
       {/* Add Functionality Dialog */}

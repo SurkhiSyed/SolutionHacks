@@ -1,20 +1,15 @@
 import cv2
 import dlib
-import webbrowser
 import numpy as np
 import time
+import requests
 
-def open_instagram():
-    print("✅ Trigger: Instagram")
-    webbrowser.open('https://www.instagram.com')
-
-def open_facebook():
-    print("✅ Trigger: Facebook")
-    webbrowser.open('https://www.facebook.com')
-
-def open_youtube():
-    print("✅ Trigger: YouTube")
-    webbrowser.open('https://www.youtube.com')
+def trigger_expression(expression):
+    try:
+        requests.post("http://localhost:8000/trigger-expression", json={"expression": expression})
+        print(f"Sent expression '{expression}' to MCP server.")
+    except Exception as e:
+        print(f"Failed to send expression: {e}")
 
 def eye_aspect_ratio(eye):
     A = np.linalg.norm(eye[1] - eye[5])
@@ -145,7 +140,7 @@ def main():
             if brow_raise > eyebrow_threshold:
                 eyebrow_count += 1
                 if eyebrow_count >= TRIGGER_FRAMES:
-                    open_instagram()
+                    trigger_expression("eyebrow_raise")
                     cap.release()
                     cv2.destroyAllWindows()
                     return
@@ -156,7 +151,7 @@ def main():
             if right_ear < eye_closed_threshold and left_ear > baseline_left_ear:
                 wink_count += 1
                 if wink_count >= TRIGGER_FRAMES:
-                    open_facebook()
+                    trigger_expression("wink")
                     cap.release()
                     cv2.destroyAllWindows()
                     return
@@ -167,7 +162,7 @@ def main():
             if right_ear < eye_closed_threshold and left_ear > eye_open_threshold:
                 youtube_count += 1
                 if youtube_count >= TRIGGER_FRAMES:
-                    open_youtube()
+                    trigger_expression("wide_wink")
                     cap.release()
                     cv2.destroyAllWindows()
                     return

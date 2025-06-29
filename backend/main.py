@@ -35,5 +35,19 @@ def trigger_client(client_name: str):
         raise HTTPException(404, "Client not found")
     return {"result": func()}
 
+@app.post("/trigger-expression")
+async def trigger_expression(request: Request):
+    data = await request.json()
+    expression = data["expression"]
+    config = load_config()
+    mappings = config.get("gesture_mappings", {})
+    clients_to_trigger = mappings.get(expression, [])
+    results = []
+    for client_id in clients_to_trigger:
+        func = client_functions.get(client_id)
+        if func:
+            results.append(func())
+    return {"status": "triggered", "clients": clients_to_trigger}
+
 mcp = FastApiMCP(app, name="Facial-MCP")
 mcp.mount()

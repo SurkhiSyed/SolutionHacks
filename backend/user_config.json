@@ -1,4 +1,12 @@
 {
-    "enabled_clients": ["gesture_control"]
+  "clients": [
+    {"id": "open_instagram", "name": "Instagram"},
+    {"id": "open_facebook", "name": "Facebook"},
+    {"id": "open_youtube", "name": "YouTube"}
+  ],
+  "gesture_mappings": {
+    "eyebrow_raise": ["open_instagram"],
+    "wink": ["open_facebook"],
+    "wide_wink": ["open_youtube"]
   }
-  
+}
