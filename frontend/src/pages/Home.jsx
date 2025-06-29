@@ -346,7 +346,11 @@ function CameraControlApp() {
         <div className="flex-1 p-4">
           <div className="relative w-full h-full bg-black rounded-xl overflow-hidden min-h-[600px]">
             {/* Live Camera Feed */}
-            <Webcam className="absolute inset-0 w-full h-full object-cover" />
+            <img
+              src="http://localhost:8000/video_feed"
+              alt="OpenCV Stream"
+              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "1rem" }}
+            />
 
             {/* Status Overlay */}
             <div className="absolute top-4 left-4 flex gap-2">

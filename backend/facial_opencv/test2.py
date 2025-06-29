@@ -28,7 +28,7 @@ def eyebrow_raise_amount(landmarks):
 
     return (left_gap + right_gap) / 2.0
 
-def calibrate_baselines(detector, predictor, cap, calibration_time=1.5):
+def calibrate_baselines(detector, predictor, cap, calibration_time=3.0):
     print("Calibrating... Please keep a neutral face and look at the camera.")
     start_time = time.time()
 
