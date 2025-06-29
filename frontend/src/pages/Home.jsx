@@ -196,13 +196,25 @@ function CameraControlApp() {
     }
   };
 
-  const toggleFunctionality = (id) => {
-    setFunctionalities(
-      functionalities.map((func) =>
-        func.id === id ? { ...func, status: func.status === "active" ? "inactive" : "active" } : func,
-      ),
-    );
+  const sendConfigToBackend = (activeIds) => {
+    fetch("http://localhost:8000/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled_clients: activeIds }),
+    });
   };
+  
+  const toggleFunctionality = (id) => {
+    const updated = functionalities.map((func) =>
+      func.id === id ? { ...func, status: func.status === "active" ? "inactive" : "active" } : func
+    );
+    setFunctionalities(updated);
+    
+    // Send only the active ones to backend
+    const activeIds = updated.filter((f) => f.status === "active").map((f) => f.id);
+    sendConfigToBackend(activeIds);
+  };
+  
 
   const toggleCameraFeature = (feature) => {
     setCameraStatus((prev) => ({
